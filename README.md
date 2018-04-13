@@ -7,4 +7,4 @@
 - JWT
 - Mongoose
 - MongoDB
-- Docker
+- Docker and Docker Compose
