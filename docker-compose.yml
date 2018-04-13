@@ -1,0 +1,20 @@
+version: '2'
+services:
+  mongodb: 
+    image: 'mongo'
+    ports:
+      - '27017:27017'
+    container_name: 'mongodb'
+  api: 
+    build: .
+    image: 'auth-node-api'
+    ports:
+      - '3000:3000'
+    container_name: 'auth-node-api'
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - JWT_SECRET=devmode
+      - MONGO_URI=mongodb://mongodb:27017/
+    depends_on:
+      - mongodb
