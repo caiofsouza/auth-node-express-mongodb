@@ -13,8 +13,8 @@ class Auth {
     }
     try {
       let user = await UserModel.findByCredentials(req.body.email, req.body.password)
-      if (user) {
-        logs(`Logged user ${user.email}`)
+      if (user && user._id) {
+        logs(`Logged user [${user.email}]`)
         let token = jwt.sign({ 
           _id: user._id,
           expires: moment().add(7, 'days').valueOf()
@@ -22,7 +22,7 @@ class Auth {
         res.json({ token })
       }
     } catch (e) {
-      logs(`Error on login. ${e.message}`)
+      logs(`Error on login [${e.message}]`)
       res.status(httpStatus.UNAUTHORIZED).json({
         message: e.message,
         status: httpStatus.UNAUTHORIZED

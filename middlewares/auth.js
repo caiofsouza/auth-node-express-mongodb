@@ -13,9 +13,8 @@ const auth = async (req, res, next) => {
   let token = req.headers.authorization
   try {
     let user = await UserModel.findByToken(token)
-    logs('User id finded ' + user._id)
     if (user) {
-      req.user = user
+      req.user = user.toJSON()
       next()
     } else {
       return res.status(httpStatus.NO_CONTENT).json({
@@ -24,7 +23,7 @@ const auth = async (req, res, next) => {
       })
     }
   } catch (e) {
-    logs('Error :' + e)
+    logs(`Error [${e}]`)
     return res.status(httpStatus.NO_CONTENT).json({
       status: httpStatus.NO_CONTENT,
       message: e

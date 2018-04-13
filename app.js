@@ -27,8 +27,9 @@ Object.keys(routes).forEach(routeName => {
 })
 
 app.use('*', (req, res) => {
-	res.send('Its Ok :D')
+	res.status(404).json({ message: 'Route not found', status: 404 })
 })
+
 
 const listen = () => {
 	logs(`Database connected at ${connectionURI}`)

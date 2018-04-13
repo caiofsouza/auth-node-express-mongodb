@@ -64,12 +64,10 @@ UserSchema.pre('save', function (next) {
   user.updated_at = new Date().getTime()
 
   if(user.isModified('password')) {
-		bcrypt.genSalt(10, (err, salt) => {
-			bcrypt.hash(user.password, salt, (err, hash) => {
-				user.password = hash
-				next()
-			})
-		})
+    const salt = bcrypt.genSaltSync(10)
+    const hash = bcrypt.hashSync(user.password, salt)
+    user.password = hash
+    next()
 	} else {
 		next()
 	}
@@ -84,7 +82,6 @@ UserSchema.pre('update', function (next) {
 UserSchema.methods.toJSON = function () {
 	const user = this
   const userObject = user.toObject()
-  console.log(returnFilter(userObject))
   return returnFilter(userObject)
 }
 
@@ -92,20 +89,26 @@ UserSchema.statics.returnFilter = returnFilter
 
 UserSchema.statics.findByCredentials = async function (email, password) {
   const user = this
-  const doc = await user.findOne({ email })
-  return new Promise((resolve, reject) => {
-    if(!doc) { 
-      return reject({ status: 404, message: 'Invalid credentials'})
+  return new Promise(async (resolve, reject) => {
+    try {
+      user.findOne({ email }, (err, doc) => {
+        if(err || !doc) { 
+          return reject({ status: 404, message: 'Invalid credentials'})
+        }
+        bcrypt.compare(password, doc.password, (err, didMatch) => {
+          if(err) return reject(err)
+          if(didMatch) {
+            resolve(doc)
+          } else {
+            reject({ message: 'Not authorized'})
+          }
+        })
+      })
+    } catch (e) {
+      reject(e)
     }
-    bcrypt.compare(password, doc.password, (err, didMatch) => {
-      if(err) return reject(err)
-      if(didMatch) {
-        resolve(returnFilter(doc))
-      } else {
-        reject({ message: 'Not authorized'})
-      }
-    })
   })
+
 }
 
 UserSchema.statics.findByToken = function(token) {
@@ -114,9 +117,9 @@ UserSchema.statics.findByToken = function(token) {
     let decodedIdAndToken = jwt.verify(token, secret)
     User.findById(decodedIdAndToken._id, function (err, user) {
       if (err) {
-        reject()
+        return reject(err)
       }
-      resolve(returnFilter(user))
+      resolve(user)
     })
   })
 }
