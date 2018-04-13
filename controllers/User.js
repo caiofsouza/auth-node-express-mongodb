@@ -4,15 +4,23 @@ const logs = require('../helpers/logs')
 const httpStatus = require('../helpers/httpStatus')
 
 class User {
-  async create (req, res) {
+  create (req, res) {
     if (!req.body) {
       return res.status(httpStatus.NO_CONTENT).send()
     } 
     const user = { ...req.body }
     try {
-      let created = await UserModel.create(user)
-      logs(`Created user ${created.email}`)
-      res.status(httpStatus.CREATED).json(created)
+      UserModel.create(user, (err, created) => {
+        if (err) {
+          logs(`Error on create user ${user.email}. Error: ..:: ${err.message} ::..`, 'error')
+          return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+            status: httpStatus.INTERNAL_SERVER_ERROR,
+            error: err.message
+          })
+        }
+        logs(`Created user ${created}`)
+        res.status(httpStatus.CREATED).send(created)
+      })
     } catch (e) {
       logs(`Error on create user ${user.email}. Error: ..:: ${e.message} ::..`, 'error')
       res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
@@ -32,7 +40,7 @@ class User {
       if (newData.password) {
         updateObj.password = newData.password
       }
-      UserModel.findByIdAndUpdate(userData._id, updateObj, function (err, updated) {
+      UserModel.findByIdAndUpdate(userData._id, updateObj, { lean: true }, function (err, updated) {
         if (err) {
           logs(`Error on findAndupdate user ${userData.email}. Error: ..:: ${err} ::..`, 'error')
           return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
@@ -41,16 +49,7 @@ class User {
           })
         }
         logs(`Updated user ${updated.email}`)
-        // UserModel.findById(updated._id, (err, findedUser) => {
-        //   console.log(findedUser)
-        //   if (err) {
-        //     return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-        //       status: httpStatus.INTERNAL_SERVER_ERROR,
-        //       error: err.message
-        //     })
-        //   }
         return res.json(updated)
-        // })
       })
     } catch (e) {
       logs(`Error on update user ${userData.email}. Error: ..:: ${e.message} ::..`, 'error')

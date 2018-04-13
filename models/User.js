@@ -9,7 +9,7 @@ const { Schema } = mongoose
 
 // filter returned values on requests
 const returnFilter = (obj) => {
-  let tmp = { ...obj._doc }
+  let tmp = { ...obj }
   tmp.password = undefined
   tmp.__v = undefined
   return tmp
@@ -76,23 +76,19 @@ UserSchema.pre('save', function (next) {
 })
 
 UserSchema.pre('update', function (next) {
-	this.updated_at = new Date().getTime()
+  const user = this
+  this.updated_at = new Date().getTime()
 	next()
-})
-
-UserSchema.post('find', function (result) {
-  console.log(JSON.stringify(result))
-  console.log(this instanceof mongoose.Query)
-  this.lean(true)
 })
 
 UserSchema.methods.toJSON = function () {
 	const user = this
   const userObject = user.toObject()
+  console.log(returnFilter(userObject))
   return returnFilter(userObject)
 }
 
-// UserSchema.statics.returnFilter = returnFilter
+UserSchema.statics.returnFilter = returnFilter
 
 UserSchema.statics.findByCredentials = async function (email, password) {
   const user = this

@@ -6,7 +6,6 @@ const mongoose = require('mongoose')
 const fs = require('fs')
 const { join } = require('path')
 
-require('./config/mongoose-config')
 const PORT = process.env.PORT || 3000
 const connectionURI = require('./db/connectionURI')
 const logs = require('./helpers/logs')
