@@ -17,7 +17,7 @@ class Auth {
         logs(`Logged user ${user.email}`)
         let token = jwt.sign({ 
           _id: user._id,
-          expires: moment().add('days', 7).valueOf()
+          expires: moment().add(7, 'days').valueOf()
         }, secret)
         res.json({ token })
       }

@@ -22,11 +22,43 @@ class User {
     }
   }
   async update (req, res) {
-    const user = { ...req.user }
+    const userData = { ...req.user }
     const newData = { ...req.body }
-    logs('User token ' + JSON.stringify(user))
-    logs('New data ' + JSON.stringify(newData))
-    res.send()
+    try {
+      const updateObj = {
+        name: newData.name || userData.name,
+        age: newData.age || userData.age,
+      }
+      if (newData.password) {
+        updateObj.password = newData.password
+      }
+      UserModel.findByIdAndUpdate(userData._id, updateObj, function (err, updated) {
+        if (err) {
+          logs(`Error on findAndupdate user ${userData.email}. Error: ..:: ${err} ::..`, 'error')
+          return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+            status: httpStatus.INTERNAL_SERVER_ERROR,
+            error: err
+          })
+        }
+        logs(`Updated user ${updated.email}`)
+        // UserModel.findById(updated._id, (err, findedUser) => {
+        //   console.log(findedUser)
+        //   if (err) {
+        //     return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        //       status: httpStatus.INTERNAL_SERVER_ERROR,
+        //       error: err.message
+        //     })
+        //   }
+        return res.json(updated)
+        // })
+      })
+    } catch (e) {
+      logs(`Error on update user ${userData.email}. Error: ..:: ${e.message} ::..`, 'error')
+      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        status: httpStatus.INTERNAL_SERVER_ERROR,
+        error: e.message
+      })
+    }
   }
 }
 

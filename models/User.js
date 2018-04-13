@@ -48,10 +48,12 @@ const UserSchema = new Schema({
     required: true
   },
   updated_at: {
-    type: Date
+    type: Date,
+    default: new Date().getTime()
   },
   created_at: {
-    type: Date
+    type: Date,
+    default: new Date().getTime()
   }
 })
 
@@ -78,11 +80,19 @@ UserSchema.pre('update', function (next) {
 	next()
 })
 
+UserSchema.post('find', function (result) {
+  console.log(JSON.stringify(result))
+  console.log(this instanceof mongoose.Query)
+  this.lean(true)
+})
+
 UserSchema.methods.toJSON = function () {
 	const user = this
   const userObject = user.toObject()
   return returnFilter(userObject)
 }
+
+// UserSchema.statics.returnFilter = returnFilter
 
 UserSchema.statics.findByCredentials = async function (email, password) {
   const user = this
@@ -102,17 +112,17 @@ UserSchema.statics.findByCredentials = async function (email, password) {
   })
 }
 
-UserSchema.statics.findByToken = async function(token) {
-	const User = this
-	try {
+UserSchema.statics.findByToken = function(token) {
+  return new Promise((resolve, reject) => {
+    const User = this
     let decodedIdAndToken = jwt.verify(token, secret)
-    let user = await User.findOne({
-      _id: decodedIdAndToken._id,
+    User.findById(decodedIdAndToken._id, function (err, user) {
+      if (err) {
+        reject()
+      }
+      resolve(returnFilter(user))
     })
-    return Promise.resolve(returnFilter(user))
-	} catch(e) {
-		return Promise.reject(e)
-	}
+  })
 }
 
 mongoose.model('User', UserSchema)
