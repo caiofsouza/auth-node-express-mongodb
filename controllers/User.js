@@ -4,6 +4,11 @@ const logs = require('../helpers/logs')
 const httpStatus = require('../helpers/httpStatus')
 const bcrypt = require('bcryptjs')
 class User {
+  getByToken (req, res) {
+    const user = { ...req.user }
+    console.log(user)
+    res.json(user)
+  }
   create (req, res) {
     if (!req.body) {
       return res.status(httpStatus.NO_CONTENT).send()

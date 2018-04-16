@@ -115,11 +115,11 @@ UserSchema.statics.findByToken = function(token) {
   return new Promise((resolve, reject) => {
     const User = this
     let decodedIdAndToken = jwt.verify(token, secret)
-    User.findById(decodedIdAndToken._id, function (err, user) {
+    User.findById(decodedIdAndToken._id, (err, user) => {
       if (err) {
         return reject(err)
       }
-      resolve(user)
+      return resolve(user)
     })
   })
 }
