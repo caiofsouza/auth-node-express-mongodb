@@ -6,7 +6,6 @@ const bcrypt = require('bcryptjs')
 class User {
   getByToken (req, res) {
     const user = { ...req.user }
-    console.log(user)
     res.json(user)
   }
   create (req, res) {
